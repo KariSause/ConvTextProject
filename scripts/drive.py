@@ -30,7 +30,7 @@ service = build('drive', 'v3', credentials=creds)
 
 
 def list_audio(folder_id):
-    q = f"'{folder_id}' contains in'audio/'"
+    q = f"'{folder_id}' in parents and mimeType contains 'audio/'"
     res = service.files().list(q=q, fields="files(id,name)").execute()
     return res.get("files", [])
 
