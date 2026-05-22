@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
@@ -22,27 +21,21 @@ def download_template(template_path: Path, file_id: str):
     template_path.parent.mkdir(parents=True, exist_ok=True)
     print(f"[Excel] Downloading from drive -> {template_path}")
     drive_download(file_id, template_path.name, str(template_path.parent))
-    
     if not is_valid_xlsx(template_path):
         raise RuntimeError(
             "File is not valid"
         )
-
     if template_path.stat().st_size < 1000:
         raise RuntimeError("File is too small, likely corrupted")
 
 def append_to_excel(template_path, output_path, single_analysis):
     template_path = Path(template_path)
     output_path = Path(output_path)
-    
     file_to_open = output_path if output_path.exists() else template_path
-    
     if not file_to_open.exists():
         raise FileNotFoundError(f"Не знайдено жодного Excel файлу: {file_to_open}")
-        
     wb = load_workbook(str(file_to_open))
     ws = wb.active
-
     current_row = ws.max_row + 1 if ws.max_row > 2 else 3
     row = single_analysis
     
@@ -59,13 +52,10 @@ def append_to_excel(template_path, output_path, single_analysis):
     ws.cell(row=current_row, column=17, value=row.get("call_result"))     # Q (17) - Результат
     ws.cell(row=current_row, column=19, value=row.get("parts"))           # S (19) - Запчастини
     ws.cell(row=current_row, column=20, value=row.get("comment"))         # T (20) - Коментар
-
-
     if row.get("bad_call"):
         ws.cell(row=current_row, column=20).fill = RED_FILL
     ws.cell(row=current_row, column=18, value=f"=SUM(F{current_row}:K{current_row})+M{current_row}") 
 
-    # Зберігаємо та закриваємо файл
     output_path.parent.mkdir(parents=True, exist_ok=True)
     wb.save(str(output_path))
     wb.close()
